@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using CheesyTot.AzureTables.SimpleIndex.Attributes;
+using System.Runtime.Serialization;
 
 namespace ReferenceSocialNetwork.Common.Data.Entities
 {
@@ -15,6 +16,7 @@ namespace ReferenceSocialNetwork.Common.Data.Entities
         public Guid FollowerProfileId => Guid.Parse(PartitionKey);
 
         [IgnoreDataMember]
+        [SimpleIndex]
         public Guid FollowedProfileId => Guid.Parse(RowKey);
 
         public DateTime FollowDate { get; set; }

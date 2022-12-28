@@ -15,10 +15,8 @@ namespace ReferenceSocialNetwork.Common.Data.Entities
         public string UserId => PartitionKey;
 
         [IgnoreDataMember]
-        public Guid ProfileId => Guid.Parse(RowKey);
-
         [SimpleIndex]
-        public string Handle { get; set; }
+        public Guid ProfileId => Guid.Parse(RowKey);
 
         public string DisplayName { get; set; }
 
