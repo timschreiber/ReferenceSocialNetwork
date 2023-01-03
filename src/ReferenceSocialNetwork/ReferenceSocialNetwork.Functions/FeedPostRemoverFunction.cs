@@ -29,6 +29,7 @@ namespace ReferenceSocialNetwork.Functions
                 return;
             }
 
+            // Possibly optimize by grouping by PartitionKey and using batch operations
             foreach(var feedItem in feedItems)
             {
                 await _feedItemRepository.DeleteAsync(feedItem);

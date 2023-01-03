@@ -8,33 +8,44 @@ namespace ReferenceSocialNetwork.Common.Data.Entities
         public Post()
         { }
 
-        public Post(Guid profileId, DateTime postDate)
-            : base(profileId.ToString("N"), EncodePostDate(postDate))
+        public Post(PostId postId)
+            : base(postId.StrProfileId, postId.StrEncDateTime)
         { }
 
         [IgnoreDataMember]
         public Guid ProfileId => Guid.Parse(PartitionKey);
 
-        [IgnoreDataMember]
-        public DateTime PostDate => DecodePostDate(RowKey);
+        public PostId PostId => new PostId(PartitionKey, RowKey);
 
-        public string PostId => $"{PartitionKey}{RowKey}";
+        [IgnoreDataMember]
+        public DateTime PostDate => PostId.PostDate;
 
         [SimpleIndex]
         public string ParentPostId { get; set; }
 
         public string Content { get; set; }
+    }
 
-        public static string EncodePostDate(DateTime postDate) =>
-            (DateTime.MaxValue.Ticks - postDate.Ticks).ToString("X").PadLeft(16, '0');
+    public class PostId
+    {
+        private readonly string _postId;
 
-        public static DateTime DecodePostDate(string encodedPostDate) =>
-            new DateTime(DateTime.MaxValue.Ticks - Convert.ToInt64(encodedPostDate, 16));
+        public PostId(string postId) => _postId = postId;
 
-        public static string GetPostId(Guid profileId, DateTime postDate) =>
-            $"{EncodePostDate(postDate)}{profileId:N}";
+        public PostId(Guid profileId, DateTime postDate)
+        {
+            var postDateVal = (DateTime.MaxValue.Ticks - postDate.Ticks).ToString("X").PadLeft(16, '0');
+            _postId = $"{postDateVal}{profileId:N}";
+        }
 
-        public static ValueTuple<Guid, DateTime> ParsePostId(string postId) =>
-            new ValueTuple<Guid, DateTime>(Guid.Parse(postId[16..]), DecodePostDate(postId[..16]));
+        public PostId(string strProfileId, string strEncPostDate) =>
+            _postId = $"{strProfileId}{strEncPostDate}";
+
+        public string StrProfileId => _postId[16..];
+        public string StrEncDateTime => _postId[..16];
+        public Guid ProfileId => Guid.Parse(StrProfileId);
+        public DateTime PostDate => new DateTime(DateTime.MaxValue.Ticks - Convert.ToInt64(StrEncDateTime, 16));
+
+        public override string ToString() => _postId;
     }
 }

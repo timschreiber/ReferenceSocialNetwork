@@ -8,26 +8,26 @@ namespace ReferenceSocialNetwork.Common.Data.Entities
         public FeedItem()
         { }
 
-        public FeedItem(Guid profileId, string postId)
-            : base(profileId.ToString("N"), postId)
+        public FeedItem(FollowId followId, PostId postId)
+            : base(followId.ToString(), postId.ToString())
         { }
 
         [IgnoreDataMember]
-        public Guid ProfileId => Guid.Parse(PartitionKey);
+        public FollowId FollowId => new(PartitionKey);
 
+        [IgnoreDataMember]
         [SimpleIndex]
-        [IgnoreDataMember]
-        public string PostId => RowKey;
+        public Guid FollowerProfileId => FollowId.FollowerProfileId;
 
+        [IgnoreDataMember]
         [SimpleIndex]
-        [IgnoreDataMember]
-        public Guid CreatorProfileId => Post.ParsePostId(RowKey).Item1;
+        public Guid FollowedProfileId => PostId.ProfileId;
 
+        [IgnoreDataMember]
         [SimpleIndex]
-        [IgnoreDataMember]
-        public string FollowId => $"{ProfileId:N}{CreatorProfileId:N}";
+        public PostId PostId => new(RowKey);
 
         [IgnoreDataMember]
-        public DateTime PostDate => Post.ParsePostId(RowKey).Item2;
+        public DateTime PostDate => PostId.PostDate;
     }
 }

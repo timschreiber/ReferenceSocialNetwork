@@ -30,33 +30,31 @@ namespace ReferenceSocialNetwork.Functions
         public async Task Run([QueueTrigger("feedpostpublisher", Connection = "StorageConnectionString")]string postId)
         {
             _logger.LogInformation($"{nameof(FeedPostPublisherFunction)} started processing postId: {postId}");
-            var strProfileId = postId[16..];
-            var strPostDate = postId[..16];
-
-            var profile = await _profileRepository.GetSingleByIndexedPropertyAsync(nameof(Profile.ProfileId), strProfileId);
+            var objPostId = new PostId(postId);
+            var profile = await _profileRepository.GetSingleByIndexedPropertyAsync(nameof(Profile.ProfileId), objPostId.StrProfileId);
             if(profile == null)
             {
-                _logger.LogInformation($"Invalid profile: {strProfileId}");
+                _logger.LogInformation($"Invalid profile: {objPostId.StrProfileId}");
                 return;
             }
 
-            var post = await _postRepository.GetAsync(strProfileId, strPostDate);
+            var post = await _postRepository.GetAsync(objPostId.StrProfileId, objPostId.StrEncDateTime);
             if(post == null)
             {
-                _logger.LogInformation($"Invalid post: {strPostDate}");
+                _logger.LogInformation($"Invalid post: {objPostId.StrEncDateTime}");
                 return;
             }
 
             var follows = await _followRepository.GetByIndexedPropertyAsync(nameof(Follow.FollowedProfileId), profile.ProfileId);
             if((follows?.Any() ?? false) == false)
             {
-                _logger.LogInformation($"No followers for profile: {strProfileId}");
+                _logger.LogInformation($"No followers for profile: {objPostId.StrProfileId}");
                 return;
             }
 
             foreach(var follow in follows)
             {
-                var feedItem = new FeedItem(follow.FollowerProfileId, postId);
+                var feedItem = new FeedItem(follow.FollowId, objPostId);
                 await _feedItemRepository.AddAsync(feedItem);
             }
 
